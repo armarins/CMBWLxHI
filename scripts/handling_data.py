@@ -202,7 +202,7 @@ def creating_multimap_FITSheader(filename_=None, freq_unit="Mhz", stokes_unit="m
     hdr['COMMENT'] = "THIS IS A NEW NAME FORMAT FOR THE BINGO PROJECT FITS FILES."
     hdr['COMMENT'] = "THESE FILES ARE USED FOR COMPONENT SEPARATION CODE CALLED --CHISEL--"
     hdr['COMMENT'] = "https://github.com/multinverse/CHISEL---signals-from-LIM"
-    hdr['COMMENT'] = "ITS FORMAT ASSUME FLASK MAPS AS INPUT"
+    hdr['COMMENT'] = "THATS FORMAT ASSUMES FLASK MAPS AS INPUT"
     hdr['COMMENT'] = "CREATED IN: {}".format(str(datetime.datetime.now()).split(".")[0])
     for i,ikey in enumerate(ginfo.keys()):
         if ikey=="field":
@@ -234,12 +234,12 @@ def creating_multimap_FITSheader(filename_=None, freq_unit="Mhz", stokes_unit="m
     
 def creating_mixmatrix_FITSheader(): 
     hdr = fits.Header()
-    hdr['COMMENT']="SECONDARY HDU CONTAIN THE A-MIXMATRIX"
+    hdr['COMMENT']="SECONDARY HDU CONTAINS THE A-MIXMATRIX"
     return hdr
     
 def creating_primary_FITSheader(output_info=None):
     hdr = fits.Header()
-    hdr['COMMENT']="PRIMARY HDU CONTAIN THE REDSHIFT VECTOR"
+    hdr['COMMENT']="PRIMARY HDU CONTAINS THE REDSHIFT VECTOR"
     hdr['FREQ_MIN'] = output_info['frequency']['min']
     hdr['FREQ_MAX'] = output_info['frequency']['max']
     hdr['NBANDS'] = output_info['frequency']['nbands']
@@ -788,34 +788,59 @@ def get_noise_level(sigma_info=None,verbose=False):
     sigma_info['nu_min']   *= 1e6    
     sigma_info['bandwidth'] = (sigma_info['nu_max']-sigma_info['nu_min'])/sigma_info['nch']
     
-    tpix = Tpix(tsur = sigma_info['tsur'] , Osur  = sigma_info['Osur'] , 
-                 Obeam= sigma_info['Obeam'], nbeams= sigma_info['nbeams'],
-                 verbose=verbose)
-    sigma_info['tpix']=tpix
-    Snoise = sigma_noise(tpix= sigma_info['tpix'], bandwidth= sigma_info['bandwidth'], 
-                         Tsys= sigma_info['Tsys'], K= sigma_info['K'],
-                         verbose=verbose)
-    sigma_info['Snoise']=Snoise
-    Spix = sigma_pix(snoise=sigma_info['Snoise'], tsur=sigma_info['tsur'] , nbeams=sigma_info['nbeams'], 
-                     fsky=sigma_info['fsky'], npix=12*sigma_info['nside']**2,
+    tpix = tpix_func(tsur = sigma_info['tsur'] , Osur  = sigma_info['Osur'] , 
+                     Obeam= sigma_info['Obeam'], nbeams= sigma_info['nbeams'],
                      verbose=verbose)
-    sigma_info['Spix']=Spix
-    sigma_info['sigmaN'] = sigma_info['Spix']*1e6
-    return sigma_info    
+    sigma_info['tpix']=tpix
+    #Snoise = sigma_noise(tpix= sigma_info['tpix'], bandwidth= sigma_info['bandwidth'], 
+    #                     Tsys= sigma_info['Tsys'], K= sigma_info['K'],
+    #                     verbose=verbose)
+    #sigma_info['Snoise']=Snoise
+    #sigma_info['sigmaN'] = sigma_info['Spix']*1e6
+    Spix = sigma_pix_func(tpix_=sigma_info['tpix'], bandwidth_=sigma_info['bandwidth'] , K_=sigma_info['K'], 
+                          Tsys_=sigma_info['Tsys'], verbose=verbose)#unit=Kelvin
+    if sigma_info['output_unit']=='mK':
+        Spix*=1e3
+    elif sigma_info['output_unit']=='muK':
+        Spix*=1e6
+    else:
+        Spix*=1e0    
+    sigma_info['sigma_pix']=Spix
+    sigma_info['sigmaN']=Spix
+    return sigma_info #noise/pix   
 
-def Tpix(tsur=None, Osur=None, Obeam=None, nbeams=None, verbose=False):
+def tpix_func(tsur=None, Osur=None, Obeam=None, nbeams=None, verbose=False):
     tpix_ = (tsur/(Osur/Obeam))*nbeams
     if verbose: print("tpix: {:.2f} hour/pix".format(tpix_/3600),"\n")    
     return tpix_
-def sigma_noise(tpix=None, bandwidth=None, Tsys=None, K=None, verbose=False):
-    Snoise_ = K*Tsys/np.sqrt(tpix*bandwidth)
-    if verbose: print("sigmaN: {:.2f} mK".format(Snoise_*1e6),"\n")
-    return Snoise_
-def sigma_pix(snoise=None, tsur=None, nbeams=None, fsky=None, npix=None, verbose=False):
-    Spix_ = snoise*np.sqrt(fsky*npix/nbeams/tsur)
-    if verbose: print("sigma pix: {:.2f} mK/pix".format(Spix_*1e6),"\n")
-    return Spix_
-    
+#def sigma_noise(tpix=None, bandwidth=None, Tsys=None, K=None, verbose=False):
+    #Snoise_ = K*Tsys/np.sqrt(tpix*bandwidth)
+    #if verbose: print("sigmaN: {:.2f} mK".format(Snoise_*1e6),"\n")
+#    return Snoise_
+def sigma_pix_func(tpix_=None, bandwidth_=None, K_=None, Tsys_=None, output_unit='K', verbose=False): 
+    #[tpix]=s
+    #[bandwidth]=Hz    
+    #[Tsys]=K
+    spix_ = K_*Tsys_/np.sqrt(tpix_*bandwidth_)
+    if output_unit=='mK':
+        spix_*=1e3
+    elif output_unit=='muK':
+        spix_*=1e6
+    else:
+        spix_*=1e0
+    if verbose: print("sigma pix: {:.6f} mK/pix".format(spix_),"\n")
+    return spix_
+
+def Nl_hi_theorectical(sigma_pix=None, nside_=None, output_unit='K'):#[sigma_pix]=K
+    if output_unit=='K':
+        Nl_= (4/Npix)*np.pi*(Spix*1e0)**2#muK2
+    elif output_unit=='mK':
+        Nl_= (4/Npix)*np.pi*(Spix*1e3)**2#muK2
+    elif output_unit=='muK':
+        Nl_= (4/Npix)*np.pi*(Spix*1e6)**2#muK2        
+    else:
+        Nl_= (4/Npix)*np.pi*(Spix*1e0)**2#muK2
+    return Nl_
 #########################
 #### FG
 #########################
@@ -1046,14 +1071,14 @@ def sky_observation(output_info=None, ifilename=None, pl_position=0):
     else:
         beamed_map['observed map']=dcopy(beamed_map['unconvolved map'])
     if type(output_info['pathdir_N'])!=type(None) and type(output_info['pathdir_N'])==str:
-        id                   = ifilename.split("_L")[1].split(".fits")[0]
+        _id_                 = ifilename.split("_L")[1].split(".fits")[0]
         filenamesN_template  = get_allfilenames(dirpath_=output_info['pathdir_N'])[0]
         part                 = filenamesN_template.split("_L")[1]
-        Nfilename            = filenamesN_template.replace(part, id+".fits")
+        Nfilename            = filenamesN_template.replace(part, _id_+".fits")
         output_info['nameN'] = Nfilename        
         Nmap = getmap(dirpath_ =output_info['pathdir_N'], 
-                            filename_=Nfilename, 
-                            healpix_readingformat=False, hdu=1)
+                      filename_=Nfilename, 
+                      healpix_readingformat=False, hdu=1)
         Nmap = hp.ud_grade(Nmap, output_info['new_nside'])
         #imap_mod+=Nmap
         beamed_map['observed map']+=Nmap
@@ -1161,12 +1186,12 @@ def save_FITS_newformat_observed(output_info=None):
     #if there is no new nside just keep the same getting from the first HI name
     if not type(output_info['new_nside'])==int:
         output_info['new_nside'] = int(filenames[0].split("_")[2])
-    #theta
+    #LMAX
     if (type(output_info['lmax']) == float or type(output_info['lmax']) == int):
         output_info['lmax'] = np.asarray(output_info['lmax'])
     else:
         output_info['lmax']  = 3*output_info['new_nside']
-    #theta
+    #THETA
     if (type(output_info['theta_range'])==np.ndarray or type(output_info['theta_range'])==range or type(output_info['theta_range'])==list):
         output_info['theta_range'] = np.asarray(output_info['theta_range'])
     else:
