@@ -1162,10 +1162,7 @@ def save_FITS_newformat_observed(output_info=None):
         os.popen(cmd).readlines()     
     print('Output directory ready.\n')    
     print('Changing dimensions...')  
-    
-    
-    filenames = np.sort(get_allfilenames(dirpath_=output_info['pathdir_HI']))
-    
+    filenames = np.sort(get_allfilenames(dirpath_=output_info['pathdir_HI']))    
     if (type(output_info['realization'])==list or type(output_info['realization'])==np.ndarray):
         filenames = np.array(['_'.join((filenames[0].split('_L')[0],'L' +iname+'.fits')) for iname in output_info['realization']])  
     elif type(output_info['realization'])==str and output_info['realization']!='all':
@@ -1177,7 +1174,6 @@ def save_FITS_newformat_observed(output_info=None):
     else:
         pass #filenames=filenames
     _ids_     = get_all_realizations_id(filenames_=filenames, new_format=True)
-    
     #print("Realizations to be saved: {}".format(filenames))
     print("Realizations to be saved: {}\n\n".format(_ids_))
     #sys.exit(0)
