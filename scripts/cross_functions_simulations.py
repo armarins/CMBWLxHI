@@ -185,7 +185,7 @@ def dictionary_cross_simulations_quantities_from_matrix(clf1_=None, clf2_=None, 
     #
     if type(channel_min_corr)!=type(None) and type(channel_max_corr)!=type(None):
         clcx_4kappa[  :channel_min_corr-1,:] = 0*clcx_[  :channel_min_corr-1,:]    
-        clcx_4kappa[channel_max_corr:,:] = 0*clcx_[channel_max_corr:,:] 
+        clcx_4kappa[channel_max_corr:    ,:] = 0*clcx_[channel_max_corr:    ,:] 
     ####
     #seeds_k  = np.arange(seed_k , seed_k + nsims +1, 1)
     seeds_hi = np.arange(seed_hi, seed_hi+ nsims +1, 1)
@@ -506,7 +506,8 @@ def get_stat_from_sims(dict_sims=None, varname='cl_cross_sim', sim_name_standard
 def get_stat_from_sims_ibin(dict_sims=None, varname='cl_cross_sim', sim_name_standard='sim0', b_namaster=None, use_dl=False, ibin=1):
     #dict_sims_ = dcopy(dict_sims)
     sim_names = np.asarray( list(dict_sims.keys()) )
-    nch_      = int( dict_sims['sim0']['cl_hi_sim'].shape[0]-1 )
+    nch_ = int( dict_sims['sim0']['cl_hi_sim'].shape[0]-1 ) if not 'kappa' in varname else 1
+    #nch_      = int( dict_sims['sim0']['cl_hi_sim'].shape[0]-1 )
     if not sim_name_standard in sim_names:
         sim_name_standard = sim_names[0]
     for j, jsim in enumerate(sim_names):

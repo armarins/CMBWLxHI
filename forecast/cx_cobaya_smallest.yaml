@@ -1,0 +1,183 @@
+##############################################################################
+# cx_cobaya_multi.yaml
+##############################################################################
+#packages_path: /data2/LSSxHI-CODES/likelihoods/
+output: output/MH_1dt_ch_womegac # Changed output name
+#force: True
+#resume: True
+# ---------------------------------------------------------------------------
+# Parameters
+# ---------------------------------------------------------------------------
+theory:
+  camb:
+    extra_args:
+      # This is the key line to select the non-linear model
+      halofit_version: takahashi
+      AccuracyBoost: 0.5
+      lSampleBoost: 0.5
+      lAccuracyBoost: 1.0      
+      # You can set other CAMB parameters here as well
+      #bbn_predictor: PArthENoPE_880.2_standard.dat
+      #lens_potential_accuracy: 1
+      #num_massive_neutrinos: 1
+      #nnu: 3.044
+      #mnu: 0.06
+      
+params:
+  H0:
+    value: 67.4
+    #prior: {min: 60, max: 80}
+    #ref: {min: 62, max: 70}  
+    #proposal: 0.1 #sigma for MCMC
+    latex: H_0
+    
+  w:
+    #value: -1
+    prior: {min: -1.5, max: -0.5}  
+    ref: {min: -1.5, max: -0.5}       
+    proposal: 0.04
+    latex: w
+    
+  wa:
+    value: 0
+    latex: w_{a}
+    
+  ombh2:
+    value: 0.022
+    latex: \Omega_b h^2
+    
+  omch2:
+    #value: 0.122
+    prior: {min: 0.020, max: 0.3}  
+    ref: {min: 0.020, max: 0.3}                     
+    proposal: 0.004
+    latex: \Omega_c h^2
+    
+  omegahi:
+    value: 4.86e-4
+    #prior: {min: 1e-4, max: 6e-4}  
+    #ref:   4e-4                   
+    #proposal: 1e-5               
+    latex: \Omega_{hi}h
+    
+  ns: 
+    value: 0.965
+    latex: n_s
+    
+  As: 
+    value: 2.0e-9
+    latex: A_s
+    
+  mnu:
+    value: 0.06
+    latex: \Sigma m_\nu
+    
+  #Nuisance parameters
+  #ax_1:
+    #value: 1
+    #prior: {min: 0.2, max: 2.0}
+    #ref:  {min: 0.5, max: 1.5}
+    #proposal: 0.05
+    #latex: \alpha_{x,1}
+
+  #ah_1:
+    #value: 1
+    #prior: {min: 0.2, max: 2.0}
+    #ref:   {min: 0.5, max: 1.5}
+    #proposal: 0.05
+    #latex: \alpha_{\mathrm{hi},1}
+# ---------------------------------------------------------------------------
+# Likelihood
+# ---------------------------------------------------------------------------
+likelihood:
+  cx_likelihood_smallest.CXLikelihood:   
+    integrator: faster
+    omegahi_model: fixed
+    include_f1xf1_cl: True
+    #include_f2xf2_cl: False
+    #include_f1xf2_cl: True
+    #biashi_model: fixed <--not adapted yet
+    #biashi_value: fixed <--not adapted yet
+    #biasg_model: fixed <--not adapted yet
+    #biasg_value: fixed <--not adapted yet
+    path_yaml: /data2/LSSxHI-CODES/forecast/input/generating_APS_theory_4x19.yaml
+    num_z: 100
+    lmin: 30
+    lmax: 400
+    del_l: 20
+    
+    ### AUTO-HIxHI
+    bins_f1f1: [19]
+    f1_field: HI
+    # data 1--------
+    data_f1_h5_1: /data2/LSSxHI-CODES/forecast/input/cl_LOWZxLOWZ_19x19_delell20_theory.h5
+  # Example: To add a Planck likelihood later
+  # planck_2018_lowl.TT_clik: {}
+
+# ---------------------------------------------------------------------------
+# Sampler
+# ---------------------------------------------------------------------------
+sampler:
+  mcmc:
+    Rminus1_stop: 0.005  # Gelman-Rubin R-1 on means
+    #Rminus1_single_split: 40 # Default is 4
+    #Rminus1_cl_stop: 0.2 # Default is 0.2 # Gelman-Rubin R-1 on std deviations
+    #Rminus1_cl_level: 0.95 # Default is 0.95
+    #burn_in: 30
+    #proposal_scale: 2.4 # Default, adjust if acceptance rate is too low/high
+    learn_proposal: True
+    #learn_proposal_Rminus1_max: 2.0 # Default
+    #learn_proposal_Rminus1_max_early: 30.0 # Default
+    #learn_proposal_Rminus1_min: 0.0 # Default
+    max_tries: .inf # Default is 100 * n_params_vary
+    max_samples: .inf #50000 # Set a limit for testing
+    seed: 42 # PS: in parallel runs, only works until to the first proposer covmat update.
+    measure_speeds: True  
+    
+#run:
+#  max_parallel: 20
+#######################################################
+#
+# TIPS
+#
+#######################################################
+# cobaya-install camb: to install CAMB by COBAYA and so
+# not been necessary to inform where is the CAMB or 
+# 2comment packages_path
+#
+# to run YAML for COBAYA there is two main ways:
+# if your script is in: /data2/LSSxHI-CODES/forecast
+# $ export PYTHONPATH=/data2/LSSxHI-CODES/forecast:$PYTHONPATH
+# $ cobaya-run [filename].yaml
+#
+# or, using directly
+#
+# $ PYTHONPATH=$PYTHONPATH:/Users/alessandromarins/Programmation/LSSxHI-CODES/#forecast cobaya-run [filename].yaml
+#
+#
+# The number of different redshift requested from CAMB to interpolate to should be 
+#   np.unique(num_z_1+num_z_2+num_z_3).size<=256
+# for 3 non-overlap z-range, num_z_i=80
+# for 4 non-overlap z-range, num_z_i=63
+###########
+# HI MODEL
+###########
+#    model [str]: Omega_HI,bias_HI model to be used.
+#           - Jiajun-hod (Zhang et al 2022)
+#           - Jiajun-ham (Zhang et al 2022)
+#           - padmanabhan (Padmanabhan 2015)
+#           - cunnington (Cunnington 2019)
+#           - bull2015 (P. Bull 2015)
+#           - crighton (I Carucci 2020)
+#           - 'fixed','cte','const' or 'constant': must provide OHI and/or bHI
+#              if OHI is None, 
+#                  OHI=[4.86e-4, 4.86e-4, 4.86e-4,...]
+#              if bHI is None,
+#                  bHI=[1.00e-0, 1.00e-0, 1.00e-0,...]
+#              if OHI (bHI) is int or float, 
+#                  OHI=[OHI, OHI, OHI,...]
+#                 (bHI=[bHI, bHI, bHI,...])
+#              if OHI (bHI) is an array, it should be OHI.size==z.size and 
+#                  OHI = [OHI[0], OHI[1], OHI[2], ..., OHI[z.size-1]]
+#                 (bHI = [bHI[0], bHI[1], bHI[2], ..., bHI[z.size-1]])
+

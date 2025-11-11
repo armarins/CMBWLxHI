@@ -1,0 +1,135 @@
+#  ----------
+# Original from:      Niko Sarcevic  | nikolina.sarcevic@gmail.com | github.com/nikosarcevic
+# Adaptation from: Alessandro Marins | alessandrormarins@gmail.com | github.com/armarins
+#  ----------
+
+#  LSST DESC survey parameters
+
+sky:
+  full_sky: 41252.9612  # full sky in square degrees
+  lsst_sky: 18000  # LSST sky coverage; in square degrees
+  f_sky: 0.43633231352128976  # fraction of the sky covered by LSST
+
+#  LSST DESC SRD (Science Requirement Document)
+#  redshift distribution parameters. Used to generate
+#  the Smail type redshift distribution:
+#  N (z) = (z / z0) ^ beta * exp([ - (z / z0) ^ alpha]
+#  where z is the redshift. For more information
+#  check https://arxiv.org/abs/1809.01669 (SRD paper)
+
+#Improving Photometric Galaxy Clustering Constraints With Cross-Bin Correlation Jordan Krywonos et al 2024, II B, page 4
+lens_sample: # lens galaxy sample parameters
+  "Y1": # year 1 lens sample parameters
+    survey: 'LSST'
+    data_release: 'Y1'
+    field:  'lensing'
+    z_min: 0.01
+    z_max: 3.5
+    z_resolution: 300
+    limiting_magnitude: 24.1  # limiting magnitude in i-band
+    sigma_z: 0.03  # photo-z variance (scatter = 0.03 (1 + z))
+    z_bias: 0.  # redshift bias values (5 lens bins)  
+    nbins: 5 #the same   
+    zbin_min: 0.2
+    zbin_max: 1.2    
+    zbin_delta: 0.2
+    zbin_edges: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2]
+    beta: 2.  # power law index of the prefactor (check eq.5 in the SRD paper)
+    alpha: 0.94  # power law index in the exponent (check eq. 5 in the SRD paper)
+    z_0: 0.26  # pivot redshift (check eq. 5 in the SRD paper)
+    n_gal: 18.  # number density of galaxies per arcmin^2
+    galaxy_bias_prefactor: 1.05  # check page 48 of the SRD b(z) = 1.05 / growth_factor(z)
+    galaxy_bias_values:
+      - 1.562362
+      - 1.732963
+      - 1.913252
+      - 2.100644
+      - 2.293210
+    f_sky: 0.43633231352128976  # fraction of the sky covered by LSST
+    fwhm: 2.343 #arcmin (0.67 arcsec  
+  "Y10": # year 10 lens sample parameters
+    survey: 'LSST'
+    data_release: 'Y10'
+    field:  'lensing'
+    z_min: 0.01
+    z_max: 3.5
+    z_resolution: 300  
+    limiting_magnitude: 25.3  # limiting magnitude in i-band
+    sigma_z: 0.03  # photo-z variance (scatter = 0.03 * (1 + z))
+    z_bias: 0.  # redshift bias values (10 lens bins)
+    nbins: 5 #the same
+    zbin_min: 0.2
+    zbin_max: 1.2    
+    zbin_delta: 0.2
+    zbin_edges: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2]    
+    beta: 2.  # power law index of the prefactor (check eq. 5 in the SRD paper)
+    alpha: 0.90  # power law index in the exponent (check eq. 5 in the SRD paper) [https://arxiv.org/pdf/1809.01669, pag 48]
+    z_0: 0.28  # pivot redshift (check eq. 5 in the SRD paper)  [https://arxiv.org/pdf/1809.01669, pag 48]
+    n_gal: 48.  # number density of galaxies per arcmin^2
+    galaxy_bias_prefactor: 0.95  # check page 48 of the SRD b(z) = 0.95 / growth_factor(z)
+    galaxy_bias_values: [-1.376695, -1.451179, -1.528404, -1.607983, -1.689579, -1.772899,-1.857700, -1.943754, -2.030887]
+    f_sky: 0.43633231352128976  # fraction of the sky covered by LSST    
+    fwhm: 2.343 #arcmin (0.67 arcsec  
+      
+      
+source_sample: # source galaxy sample parameters
+  photometric:
+    Y1:  # year 1 source sample parameters   
+        survey: 'LSST'
+        data_release: 'Y1'
+        field:  'density'
+        mode: 'photometric'
+        z_min: 0.01
+        z_max: 3.5
+        z_resolution: 300    
+        limiting_magnitude: 24.1  # limiting magnitude THIS needs to be checked!
+        sigma_z: 0.05  # photo-z variance (scatter = 0.05 * (1 + z))
+        z_bias: 0.  # redshift bias values (5 source bins)
+        nbins: 5 #the same             
+        beta: 2.  # power law index of the prefactor (check eq. 5 in the SRD paper)
+        alpha: 0.78  # power law index in the exponent (check eq. 5 in the SRD paper)
+        z_0: 0.13  # pivot redshift (check eq. 5 in the SRD paper)
+        mean_eff_z: 0.85  # mean effective redshift
+        n_gal: 10.  # number density of galaxies per arcmin^2
+        f_sky: 0.43633231352128976  # fraction of the sky covered by LSST        
+        fwhm: 0.011166 #arcmin (0.67 arcsec  #LSST Science Book, table 3.2, i-band        
+    Y10: # year 10 source sample parameters    
+        survey: 'LSST'
+        data_release: 'Y10'
+        field:  'density'
+        mode: 'photometric'
+        z_min: 0.01
+        z_max: 3.5  
+        limiting_magnitude: 25.3  # limiting magnitude THIS needs to be checked!
+        sigma_z: 0.05  # photo-z variance (scatter = 0.05 * (1 + z))
+        z_bias: 0.  # redshift bias values (5 source bins)
+        nbins: 5 #the same        
+        beta: 2.  # power law index of the prefactor (check eq. 5 in the SRD paper)
+        alpha: 0.68  # power law index in the exponent (check eq. 5 in the SRD paper)
+        z_0: 0.11  # pivot redshift (check eq. 5 in the SRD paper)
+        mean_eff_z: 1.05  # mean effective redshift
+        n_gal: 27.  # number density of galaxies per arcmin^2  
+        f_sky: 0.43633231352128976  # fraction of the sky covered by LSST                
+        fwhm: 0.011166 #arcmin (0.67 arcsec  #LSST Science Book, table 3.2, i-band        
+  spectroscopic:
+    Y10:  # year 10 source sample parameters           
+        survey: 'LSST-fake'    
+        data_release: 'Y10'
+        field:  'density'
+        mode: 'spectroscopy'
+        z_min: 0.01
+        z_max: 3.5        
+        sigma_z: 0.0001  # photo-z variance (scatter = 0.05 * (1 + z))
+        nbins: 5 #the same        
+        beta: 2.  # power law index of the prefactor (check eq. 5 in the SRD paper)
+        alpha: 0.68  # power law index in the exponent (check eq. 5 in the SRD paper)
+        z_0: 0.11  # pivot redshift (check eq. 5 in the SRD paper)
+        n_gal: 1000.  # number density of galaxies per arcmin^2          
+        f_sky: 0.43633231352128976  # fraction of the sky covered by LSST                
+        fwhm: 0.011166 #arcmin (0.67 arcsec  #LSST Science Book, table 3.2, i-band                
+
+survey_redshift_range:
+  z_start: 0.01  # start of the redshift interval
+  z_stop: 3.5  # end of the redshift interval
+  z_resolution: 300  # redshift resolution
+

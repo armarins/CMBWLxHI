@@ -1,0 +1,121 @@
+# Cobaya input file: cx_cobaya_analysis.yaml
+packages_path: /data2/LSSxHI-CODES/forecast
+# Information about the likelihood
+likelihood:
+  # Correct path/module name to your likelihood class
+  cx_likelihood.CXLikelihood:
+    # --- Input Files ---
+    #path: /data2/LSSxHI-CODES/forecast/  # Path to directory containing cx_likelihood.py
+    data_file_h5: input/cl_gcLSSTxLOWZ_4x19_40_0001_delell20.h5 # Your HDF5 data file
+    params_aps_file: input/generating_APS_theory.yaml # Your APS params YAML file
+
+    # --- Binning/Cut Settings (matching your global script) ---
+    nside: 256
+    del_l: 20
+    lmin: 30
+    lmax: 400
+
+    # --- Redshift Settings (matching your global script) ---
+    hbin: 19 # The HI bin index (0-based)
+    num_z: 100 # Number of redshift points for integration
+
+# Theory code: CAMB configuration
+theory:
+  camb:
+    # Ensure CAMB provides outputs needed by the likelihood's get_requirements
+    # Settings below should be consistent with likelihood needs & old get_camb_results
+    extra_args:
+      halofit_version: 'mead2020' # Or your preferred version
+      # --- Coverage ---
+      # Redshift range: Should cover min/max zv determined in likelihood.
+      # Providing a slightly wider range here is safe. Check min/max of your _zv.
+      # Example: if zv spans 0.5 to 2.0, use redshifts: [0.0, 0.1, ..., 2.5]
+      redshifts: numpy.logspace(numpy.log10(1e-10),numpy.log10(1150), 150) # Adjust range and spacing as needed!
+      # Kmax: Must match or exceed likelihood request [1/Mpc]
+      kmax: 100.0 # From your likelihood requirements (default)
+      omch2: 0.122
+      npoints: 100000000
+      #nonlinear: True
+      # --- Accuracy (optional) ---
+      # AccuracyBoost: 1.0
+      # lSampleBoost: 1.0
+      # lAccuracyBoost: 1.0
+      # --- Other CAMB settings ---
+      # Mnu needs to be passed via cosmological parameters block
+      # Want_CMB: False # Optional: Turn off if not needed
+      # Want_transfers: True # Needed for matter power spectrum
+
+# Parameters to vary
+params:
+  # --- Cosmological Parameters ---
+  H0:
+    prior:
+      min: 60
+      max: 80
+    ref: 67.3
+    proposal: 0.5
+    latex: H_0
+  ombh2:
+    prior:
+      min: 0.020
+      max: 0.025
+    ref: 0.0223
+    proposal: 0.0001
+    latex: \Omega_\mathrm{b} h^2
+  #omch2:
+    #prior:
+    #  min: 0.10
+    #  max: 0.14
+    #ref: 0.120
+    #proposal: 0.001
+    #latex: \Omega_\mathrm{c} h^2
+  logA: # Sample in logA
+    prior:
+      min: 2.5
+      max: 3.5
+    ref: 3.05
+    proposal: 0.01
+    latex: \log(10^{10} A_\mathrm{s})
+  As:
+    value: 'lambda logA: 1e-10*np.exp(logA)' # Derived As
+    latex: A_\mathrm{s}
+  ns:
+    prior:
+      min: 0.9
+      max: 1.1
+    ref: 0.965
+    proposal: 0.004
+    latex: n_s
+
+  # --- Fixed Cosmological Parameters ---
+  mnu: 0.06 # Fixed neutrino mass as in your script
+  # Add other fixed parameters if CAMB needs them (e.g., w0, wa if not -1, 0)
+  # w: -1.0
+  # wa: 0.0
+
+  # --- Nuisance Parameters (associated with the likelihood) ---
+  tf: # Your scaling factor
+    prior:
+      min: 0.8
+      max: 1.2
+    ref: 1.0 # Centered at 1?
+    proposal: 0.01
+    latex: t_f
+
+# Sampler settings (e.g., MCMC)
+sampler:
+  mcmc:
+    Rminus1_stop: 0.04 # Convergence criterion
+    # max_tries: 1000 # Default is usually okay
+    burn_in: 100 # Number of burn-in steps per chain
+    max_samples: 5000 # Max samples per chain
+    learn_proposal: True # Generally good to keep true
+
+# Output settings
+output: output/cx_mcmc_run_v1 # Prefix for output files (chains will go here)
+
+# Optional: Specify where Cobaya can find your custom likelihood code
+# packages_path: path/to/folder/containing/cx_likelihood_module
+
+# Optional: MPI settings (if running with mpirun)
+# mpi: True # Let Cobaya know MPI is used (often automatic)

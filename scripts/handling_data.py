@@ -4,11 +4,26 @@ import healpy as hp
 import astropy.io.fits as fits
 from copy import deepcopy as dcopy
 #HImap-r0023-f1z15.fits
+
+# Helper function to correctly parse boolean strings from the command line
+def str2bool(v):
+    """Converts string representations of booleans to actual boolean values."""
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 def nu_bins_vector(numin_=None, numax_=None, nbands_=None):
+    nu_HI   = 1420.405751768 #MHz
     nustep_ = (numax_-numin_)/nbands_
     nu_     = np.around(np.arange(numin_, numax_ + nustep_, nustep_),decimals=2)
     nbands  = nu_.size-1
-    return {"min":numin_,"max":numax_,"bandwidth":nustep_, "nbands":nbands, "nu":nu_}
+    z_bins_ = (nu_HI/nu_)-1
+    return {"min":numin_,"max":numax_,"bandwidth":nustep_, "nbands":nbands, "nu":nu_, 'z':z_bins_}
 
 def get_info_from_directory(dirname_= None, kind="flask"):
     if kind=="flask":  #formatting: ../flask_maps_[NSIDE_NUMBER]
@@ -343,13 +358,13 @@ def save_FITS_newformat(pathdir_=None, output_info=None):
                         hdul = fits.HDUList([hdu0])
                     elif int(output_info['savedata_hdu'])==1:            
                         hdu0 = fits.PrimaryHDU(header=hdr_hdu0,data=vec_hdu0)
-                        hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1, name="MULTIMAPS")
+                        hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1)#, name="MULTIMAPS")
                         hdul = fits.HDUList([hdu0,hdu1])                
                     else:
                         raise Expection("Savedata HDU must be 0 or 1. Current: {}".format(output_info['savedata_hdu']))
                 except:
                     hdu0 = fits.PrimaryHDU(header=hdr_hdu0,data=vec_hdu0)
-                    hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1, name="MULTIMAPS")
+                    hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1)#, name="MULTIMAPS")
                     hdul = fits.HDUList([hdu0,hdu1])                            
                 hdul.writeto(os.path.join(output_info['output_dir'],new_name), overwrite=True)                                   
                 new_name = os.path.join(pathout, new_name)
@@ -379,8 +394,8 @@ def save_FITS_newformat(pathdir_=None, output_info=None):
             'realization':output_info['realization']}
         
         vec = nu_bins_vector(numin_=ginfo['frequency']['min'], 
-                                   numax_=ginfo['frequency']['max'], 
-                                   nbands_=ginfo['frequency']['nbands'])
+                             numax_=ginfo['frequency']['max'], 
+                            nbands_=ginfo['frequency']['nbands'])
         print('Building HDU data and headers...')
         ginfo['frequency']['nu']= vec['nu']
         try:
@@ -396,10 +411,21 @@ def save_FITS_newformat(pathdir_=None, output_info=None):
                                                 stokes_unit=output_info["stokes_unit"], 
                                                 fwhm_unit  =output_info["fwhm_unit"])     
         print('HDUs ready.')
-        hdu0 = fits.PrimaryHDU(header=hdr_hdu0,data=vec_hdu0)
-        hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1, name="MULTIMAPS")
-        hdul = fits.HDUList([hdu0,hdu1])
+        #hdu0 = fits.PrimaryHDU(header=hdr_hdu0,data=vec_hdu0)
+        #hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1, name="MULTIMAPS")
+        if not output_info["savedata_hdu"]:
+            #HDU=0: [MAPS, REDSHITFS]
+            print(0)
+            hdu0 = fits.PrimaryHDU(header=hdr_hdu1,data=vec_hdu1)
+            hdu1 = fits.ImageHDU(  header=hdr_hdu0,data=vec_hdu0)            
+        else: 
+            print(1)
+            #HDU=1: [REDSHITFS, MAPS]
+            hdu0 = fits.PrimaryHDU(header=hdr_hdu0,data=vec_hdu0)
+            hdu1 = fits.ImageHDU(  header=hdr_hdu1,data=vec_hdu1)                        
+        hdul = fits.HDUList([hdu0,hdu1])               
         print('Saving FITS file...')
+        print(os.path.join(output_info['output_dir'],new_name))
         hdul.writeto(os.path.join(output_info['output_dir'],new_name), overwrite=True)
         print('FITS file saved.')
     

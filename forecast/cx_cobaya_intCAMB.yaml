@@ -1,0 +1,145 @@
+##############################################################################
+# cx_cobaya_intCAMB.yaml -- Adapted for shared CAMB
+##############################################################################
+
+#packages_path:
+#  - /data2/LSSxHI-CODES/scripts    
+#  - /data2/LSSxHI-CODES/forecast 
+output: output/MH_3pars_intCAMB # Changed output name
+force: True
+
+# ---------------------------------------------------------------------------
+# Parameters
+# ---------------------------------------------------------------------------
+params:
+  H0:
+    prior: {min: 60, max: 80}
+    ref: 67.4 # Reference value for starting point
+    proposal: 1.0 # Proposal sigma for MCMC
+    latex: H_0
+
+  ombh2:
+    prior: {min: 0.020, max: 0.030} # Expanded prior slightly
+    ref: 0.0224 # Planck 2018 best fit
+    proposal: 0.001 # Smaller proposal for better acceptance
+    latex: \Omega_b h^2
+
+  tf_1:
+    prior: {min: 0.1, max: 2.0}
+    ref: 1.0
+    proposal: 0.1
+    latex: t_{f,1} # Adjusted latex
+    
+  tf_2:
+    prior: {min: 0.1, max: 2.0}
+    ref: 1.0
+    proposal: 0.1
+    latex: t_{f,2} # Adjusted latex
+    
+  # Fixed cosmological parameters (used by CAMB)
+  omch2: # cold-DM density today * h^2
+    value: 0.120 # Planck 2018
+    latex: \Omega_c h^2
+  ns: # scalar spectral index
+    value: 0.965 # Planck 2018
+    latex: n_s
+  As: # scalar amplitude at k=0.05 Mpc^-1
+    value: 2.0e-9 # Approximate value
+    latex: A_s
+  mnu: # sum of neutrino masses in eV
+    value: 0.06 # Minimal mass, often assumed
+    latex: \Sigma m_\nu
+  # tau: 0.054 # Optical depth to reionization, if needed by other likelihoods
+
+# ---------------------------------------------------------------------------
+# Theory Computations (CAMB)
+# ---------------------------------------------------------------------------
+theory:
+  camb:
+    #path: /home/amarins/anaconda3/envs/PY10/lib/python3.10/site-packages/camb
+    # extra_args are passed to CAMB's set_params() or equivalent
+    extra_args:
+      halofit_version: "mead" # Or "original", "takahashi"
+      # Accuracy settings can be adjusted if needed
+      # AccuracyBoost: 1.0 
+      # lSampleBoost: 1.0
+      # NonLinear specifies how Pk is computed.
+      # The Pk_interpolator is requested with nonlinear=True by the likelihood,
+      # so CAMB needs to be configured to compute non-linear Pk.
+      # For modern CAMB Python versions, just ensuring the Pk_interpolator is
+      # requested with nonlinear=True is often sufficient.
+      # Explicitly:
+      WantTransfer: True # Ensure CAMB computes transfer functions
+      # num_redshifts: 50 # Number of redshifts for CAMB's internal Pk grid
+      # kmax: 50.0 # kmax for CAMB's Pk grid (Mpc^-1). Ensure it's high enough.
+      # The likelihood requests Pk_interpolator up to specific z_max and k_max,
+      # Cobaya will manage consistency.
+      # If adding Planck, specific settings like DoLensing may be needed here.
+
+# ---------------------------------------------------------------------------
+# Likelihood
+# ---------------------------------------------------------------------------
+likelihood:
+  cx_likelihood_intCAMB.CXLikelihood:   
+    data_h5_1: input/cl_gcLSSTxLOWZ_4x19_40_0001_delell20.h5
+    aps_yaml_1: input/generating_APS_theory_4x19.yaml
+    hi_index_1: 19
+    num_z_1: 100
+    lmin_1: 30
+    lmax_1: 400
+    del_l_1: 20
+    
+    data_h5_2: input/cl_gcLSSTxLOWZ_4x20_40_0001_delell20.h5
+    aps_yaml_2: input/generating_APS_theory_4x20.yaml
+    hi_index_2: 20
+    num_z_2: 100
+    lmin_2: 30
+    lmax_2: 400
+    del_l_2: 20     
+
+  # Example: To add a Planck likelihood later
+  # planck_2018_lowl.TT_clik: {}
+
+# ---------------------------------------------------------------------------
+# Sampler
+# ---------------------------------------------------------------------------
+sampler:
+  mcmc:
+    Rminus1_stop: 0.01
+    Rminus1_single_split: 40 # Default is 4
+    Rminus1_cl_stop: 0.2 # Default is 0.2
+    Rminus1_cl_level: 0.95 # Default is 0.95
+    burn_in: 30
+    proposal_scale: 2.4 # Default, adjust if acceptance rate is too low/high
+    learn_proposal: True
+    learn_proposal_Rminus1_max: 2.0 # Default
+    learn_proposal_Rminus1_max_early: 30.0 # Default
+    learn_proposal_Rminus1_min: 0.0 # Default
+    max_tries: 1000 # Default is 100 * n_params_vary
+    max_samples: 50000 # Set a limit for testing
+    seed: 42
+    measure_speeds: True
+
+#run:
+#  max_parallel: 20
+
+
+
+#######################################################
+#
+# TIPS
+#
+#######################################################
+# cobaya-install camb: to install CAMB by COBAYA and so
+# not been necessary to inform where is the CAMB or 
+# 2comment packages_path
+#
+# to run YAML for COBAYA there is two main ways:
+# if your script is in: /data2/LSSxHI-CODES/forecast
+# $ export PYTHONPATH=/data2/LSSxHI-CODES/forecast:$PYTHONPATH
+# $ cobaya-run [filename].yaml
+#
+# or, using directly
+#
+# $ PYTHONPATH=$PYTHONPATH:/data2/LSSxHI-CODES/forecast/ cobaya-run [filename].yaml
+#	

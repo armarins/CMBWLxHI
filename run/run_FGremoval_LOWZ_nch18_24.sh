@@ -26,7 +26,7 @@ FILENAME_FOREGROUNDS='FG_I_256_980mhz1260mhz_30bins_full_nonfrps_L0.fits'
 #METHOD='ICA'
 #WTRANSFORM='identity'
 VERBOSE=1
-NSIMS=30
+NSIMS=100
 NSIDE=256
 NUMIN=980
 NUMAX=1260
@@ -42,7 +42,7 @@ eval "$(conda shell.bash hook)"
 conda activate amarins
 
 ############
-for i in 2 3 4 5 
+for i in 5 
 do
     python $PATHFILE --verbose $VERBOSE --project $PROJECT --dirpath_sims $DIRPATH_SIMS \
                      --filepath_field1 $FILEPATH_FIELD1 --filepath_field2 $FILEPATH_FIELD2 --filepath_cross $FILEPATH_CROSS \

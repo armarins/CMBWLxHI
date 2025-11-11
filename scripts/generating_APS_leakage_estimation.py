@@ -33,7 +33,7 @@ elif sys.version_info[0]==3:
 
 #PATH2SCRIPTfiles
 #PATH=os.getcwd()
-PATH='/data/AMARINS/CMBWLxHI-CODES/scripts'
+PATH='/data/AMARINS/LSSxHI-CODES/scripts'
 ###################################################################
 # This part is for extracting information from parameters.ini file
 ###################################################################
