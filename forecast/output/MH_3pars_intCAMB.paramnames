@@ -1,8 +1,0 @@
-H0        H_0
-ombh2     \Omega_b h^2
-tf_1      TF_1
-tf_2      TF_2
-minuslogprior  -\ln(\text{prior})
-minuslogprior__0 -\ln(\text{prior}_0)
-chi2      \chi^2
-chi2__cx_likelihood_intCAMB.CXLikelihood \chi^2_{\text{CXLi}}

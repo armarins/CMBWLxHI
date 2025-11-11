@@ -3,7 +3,7 @@ import os, sys, time
 from copy import deepcopy as dcopy
 import cross_functions_theory as cxft
 import cross_functions_simulations as cxfs
-import handling_data   as hdata
+#import cross_functions_simulations_2 as cxfs2
 import numpy as np
 import healpy as hp
 #import pandas as pd
@@ -31,7 +31,7 @@ elif sys.version_info[0]==3:
 # This part is for extracting information from parameters.ini file
 ###################################################################
 timei       = time.time()
-PATH        = '/data/AMARINS/LSSxHI-CODES/scripts'
+PATH        = '/data/AMARINS/CMBWLxHI-CODES/scripts'
 INI         = "generating_APS_simulations.ini"
 name_params = os.path.join(PATH,INI)
 config.read(name_params)
@@ -66,8 +66,8 @@ channel_tax                 = config.getint(  "Simulations","channel_tax")
 parser = argparse.ArgumentParser(description='Modify by the command terminal parameters in {} file'.format(INI))
 
 #PATHs
-parser.add_argument('--verbose'  , type=hdata.str2bool, dest = 'verbose'  , default = verbose   , help = 'Enable verbose output (True/False).'       )
-parser.add_argument('--project'  , action = 'store'   , dest = 'project'  , default = project   , help = 'Project name to be used as directory name.')
+parser.add_argument('--verbose'  , action = 'store', dest = 'verbose'  , default = verbose  , help = '')
+parser.add_argument('--project'  , action = 'store', dest = 'project'  , default = project  , help = '')
 
 #Cosmology
 parser.add_argument('--filepath_field1'     , action = 'store', dest = 'filepath_field1'     , default = filepath_field1     , help = '')
@@ -75,21 +75,21 @@ parser.add_argument('--filepath_field2'     , action = 'store', dest = 'filepath
 parser.add_argument('--filepath_cross'      , action = 'store', dest = 'filepath_cross'      , default = filepath_cross      , help = '')
 parser.add_argument('--filepath_foregrounds', action = 'store', dest = 'filepath_foregrounds', default = filepath_foregrounds, help = '')
 parser.add_argument('--filepath_mask'       , action = 'store', dest = 'filepath_mask'       , default = filepath_mask       , help = '')
-parser.add_argument('--pathout'             , action = 'store', dest = 'pathout'             , default = pathout             , help = '')
-parser.add_argument('--prefix'              , action = 'store', dest = 'prefix'              , default = prefix              , help = '')
-parser.add_argument('--suffix'              , action = 'store', dest = 'suffix'              , default = suffix              , help = '')
+parser.add_argument('--pathout', action = 'store', dest = 'pathout', default = pathout, help = '')
+parser.add_argument('--prefix' , action = 'store', dest = 'prefix' , default = prefix , help = '')
+parser.add_argument('--suffix' , action = 'store', dest = 'suffix' , default = suffix , help = '')
 
-parser.add_argument('--add_foregrounds'     , type=hdata.str2bool, dest = 'add_foregrounds', default = add_foregrounds, help = '')
-parser.add_argument('--apply_mask'          , type=hdata.str2bool, dest = 'apply_mask'     , default = apply_mask     , help = '')
+parser.add_argument('--add_foregrounds', action = 'store', dest = 'add_foregrounds', default = add_foregrounds, help = '')
+parser.add_argument('--apply_mask'     , action = 'store', dest = 'apply_mask'     , default = apply_mask     , help = '')
 
 parser.add_argument('--nrealizations', action = 'store', dest = 'nrealizations', default = nrealizations, help = '')
 parser.add_argument('--seed0'        , action = 'store', dest = 'seed0'        , default = seed0        , help = '')
 
-parser.add_argument('--limited_correlated_channels', type=hdata.str2bool, dest = 'limited_correlated_channels', default = limited_correlated_channels , help = '')
-parser.add_argument('--channel_min_corr'           , action = 'store'   , dest = 'channel_min_corr'           , default = channel_min_corr            , help = '')
-parser.add_argument('--channel_max_corr'           , action = 'store'   , dest = 'channel_max_corr'           , default = channel_max_corr            , help = '')
-parser.add_argument('--amplification'              , action = 'store'   , dest = 'amplification'              , default = amplification               , help = '')
-parser.add_argument('--channel_tax'                , action = 'store'   , dest = 'channel_tax'                , default = channel_tax                 , help = '')
+parser.add_argument('--limited_correlated_channels', action = 'store', dest = 'limited_correlated_channels', default = limited_correlated_channels , help = '')
+parser.add_argument('--channel_min_corr'              , action = 'store', dest = 'channel_min_corr'              , default = channel_min_corr               , help = '')
+parser.add_argument('--channel_max_corr'              , action = 'store', dest = 'channel_max_corr'              , default = channel_max_corr               , help = '')
+parser.add_argument('--amplification'              , action = 'store', dest = 'amplification'              , default = amplification               , help = '')
+parser.add_argument('--channel_tax'                , action = 'store', dest = 'channel_tax'                , default = channel_tax                , help = '')
 
 arguments = parser.parse_args()
 ###############################################################################
@@ -260,8 +260,9 @@ for i,_sim_ in enumerate(_dict_.keys()):
                     print('{}. saving at: {}'.format(_sim_, pathname) ) 
             del alm_matrix_isim_comp, alm_matrix_isim_real, alm_matrix_isim_imag, pathname        
         ########    
+        ####
         else:
-            pass
+           pass
 
 pathname = '/'.join(( pathname.split('/')[:-2]  ))  
 for _seed_name_ in ['seed_kunc', 'seed_hi']:

@@ -32,7 +32,7 @@ elif sys.version_info[0]==3:
 
 #PATH2SCRIPTfiles
 #PATH=os.getcwd()
-PATH='/data/AMARINS/LSSxHI-CODES/scripts'
+PATH='/data/AMARINS/CMBWLxHI-CODES/scripts'
 ###################################################################
 # This part is for extracting information from parameters.ini file
 ###################################################################
@@ -305,15 +305,15 @@ load_sims=1
 if load_sims:
     itime         = time.time()
     varnames      = ['alm_hi_sim']#, 'cl_hi_sim', 'cl_kappa_sim', 'cl_cross_sim','cross_correlation_coef', 'alm_kappa_sim']
-    dict_all      = cxfs.get_file_simulated_data(path_=params_path['dirpath_sims'], varnames=varnames, nsims_to_use=params_sims.nreals)
+    dict_all      = cxfs.get_file_simulated_data(params_path['dirpath_sims'], varnames, nsims_to_use=params_sims.nreals)
     dict_all_mean = cxfs.dict_averages_from_loaded_data(dict_all_=dict_all, varnames_=varnames)
     nsims         = int(dict_all_mean[varnames[0]]['bin1']['matrix'].shape[0]    )
     if params_general['verbose']: print('Loading time for {0:d} sims: {1:.2f} seg'.format(nsims, time.time()-itime)) 
     del nsims
-    
+#print(nsims)
 params_sims['realizations'] = np.asarray(list(dict_all.keys()))#[:nreals]
 if params_general['verbose']: print("Using the sims: ",params_sims['realizations'])
-#params_sims['realizations']
+params_sims['realizations']
 #####################################################################################################################################################################
 #####################################################################################################################################################################                                                    
 if 1:
